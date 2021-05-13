@@ -1,0 +1,38 @@
+name: 'BrowserStack Test'
+on: [push, pull_request]
+jobs:
+  ubuntu-job:
+    name: 'BrowserStack Test on Ubuntu'
+    runs-on: ubuntu-latest  # Can be self-hosted runner also
+    steps:
+
+      - name: 'BrowserStack Env Setup'  # Invokes the setup-env action
+        uses: browserstack/github-actions/setup-env@main
+        with:
+          build-name: 'github_actions'
+          username:  ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+
+      - name: 'BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
+        uses: browserstack/github-actions/setup-local@main
+        with:
+          local-testing: start
+          local-identifier: random
+
+      # The next 3 steps are for building the web application to be tested and starting the web server on the runner environment
+
+      - name: 'Checkout the repository'
+        uses: actions/checkout@v2
+
+      - name: 'Running test on BrowserStack'
+          run: mvn test -P parallel
+
+      - name: 'BrowserStackLocal Stop'  # Terminating the BrowserStackLocal tunnel connection
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
+  A sample GitHub Actions workflow is given in the right for your easy reference. Additionally, you need to keep the following points in mind while using the BrowserStack GitHub Actions to run your tests on the BrowserStack infra.
+
+  You need to invoke the browserstack/github-actions/setup-env@master and browserstack/github-actions/setup-local@master GitHub Actions in the job where your application is being built and run
+  You need to invoke the browserstack/github-actions/setup-env@master GitHub Action also in the job where test scripts will run because this Action sets up the environment variables BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_BUILD_NAME and BROWSERSTACK_PROJECT_NAME, which are to be used in your test scripts
+  Additionally, you must ensure that you use the same local-identifier while invoking the setup-local action and also inside your test script. As these activities are not happening in the same job, you have to take care of this manually and you cannot simply use BROWSERSTACK_LOCAL_IDENTIFIER in your test scripts to set the browserstack.localIdentifier capability
