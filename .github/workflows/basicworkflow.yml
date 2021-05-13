@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: 'Running test on BrowserStack'
-          run: mvn test -P parallel
+        run: mvn test -P parallel
 
       - name: 'BrowserStackLocal Stop'  # Terminating the BrowserStackLocal tunnel connection
         uses: browserstack/github-actions/setup-local@master
